@@ -1,6 +1,7 @@
 from tkinter import *
 import random
 import pygame
+import random
 
 
 root = Tk()
@@ -11,14 +12,18 @@ root.configure(bg="#D5BA33")
 root.maxsize(1000, 800)
 
 pygame.mixer.init()
-music1 = pygame.mixer.Sound("C:/Users/maksl/Desktop/redfolder/music/ithas.mp3")
+music1 = pygame.mixer.Sound("music/ithas.mp3")
 music1.set_volume(0.1)
 music1.play()
 
-bg1 = PhotoImage(file="C:/Users/maksl/Desktop/redfolder/lordaeron.png")
+bg1 = PhotoImage(file="lordaeron.png")
 
-art = PhotoImage(file="C:/Users/maksl/Desktop/redfolder/arthas.png", width=200, height=228)
-krl = PhotoImage(file="C:/Users/maksl/Desktop/redfolder/snake.png", width=103, height=200)
+art = PhotoImage(file="arthas.png", width=200, height=228)
+krl = PhotoImage(file="snake.png", width=103, height=200)
+
+arthas_replics = ["arthasreplics/1.mp3", "arthasreplics/2.mp3", "arthasreplics/3.mp3", "arthasreplics/4.mp3",
+                    "arthasreplics/5.mp3", "arthasreplics/6.mp3", "arthasreplics/7.mp3", "arthasreplics/8.mp3",
+                    "arthasreplics/9.mp3", "arthasreplics/10.mp3", "arthasreplics/11.mp3", "arthasreplics/12.mp3"]
 
 w, h = 1000, 720
 orig_canva = Canvas(root, height=h, width=w)
@@ -58,6 +63,11 @@ class Snake:
 arthas = Arthas(orig_canva)
 snake = Snake(orig_canva)
 
+def play_random_sound():
+    sound_file = random.choice(arthas_replics)
+    pygame.mixer.music.load(sound_file)
+    pygame.mixer.music.play()
+    pygame.mixer.music.set_volume(0.1)
 
 score = 0
 def score_upd():
@@ -104,13 +114,14 @@ def down(event):
         arthas.move(0, 10)
         hit()
 def hit():
+    
     arthas_hitbox = orig_canva.bbox(arthas.hitbox)
     snake_hitbox = orig_canva.bbox(snake.hitbox)
     if (arthas_hitbox[2] > snake_hitbox[0] and
         arthas_hitbox[0] < snake_hitbox[2] and
         arthas_hitbox[3] > snake_hitbox[1] and
         arthas_hitbox[1] < snake_hitbox[3]):
-        print("nice!")
+        play_random_sound()
         snake.respawn()
         score_upd()
 
