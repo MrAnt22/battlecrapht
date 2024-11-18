@@ -1,13 +1,20 @@
 from tkinter import Canvas, Frame, Label, PhotoImage
+from PIL import Image, ImageTk
 from characters.arthas import Arthas
 from characters.snake import Snake
-from utils.sounds import play_random_sound, play_music
+from utils.sounds import play_music, play_random_sound
 
 def start_level1(root):
     play_music("assets/sounds/ithas.mp3")
-    w, h = 1000, 720
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    w = screen_width
+    h = screen_height
+    
     game_frame = Frame(root, bg="black")
     game_frame.pack(fill="both", expand=True)
+
 
     bg1 = PhotoImage(file="assets/images/lordaeron.png")
     arthas_image = PhotoImage(file="assets/images/arthas.png")
@@ -17,16 +24,21 @@ def start_level1(root):
     game_frame.arthas_image = arthas_image
     game_frame.snake_image = snake_image
 
-    canvas = Canvas(game_frame, height=h, width=w)
+    original_image = Image.open("assets/images/lordaeron.png")
+    stretched_image = original_image.resize((screen_width, screen_height))
+    bg1 = ImageTk.PhotoImage(stretched_image)
+
+    canvas = Canvas(game_frame, width=screen_width, height=screen_height)
     canvas.pack(expand=True, fill="both")
     canvas.create_image(0, 0, image=bg1, anchor="nw")
+    canvas.bg_image = bg1
 
     score = 0
     arthas = Arthas(canvas, arthas_image)
     snake = Snake(canvas, snake_image)
 
-    score_label = Label(game_frame, text=f"Score: {score}", bg="white", fg="red", font="Arial 14")
-    score_label.pack()
+    score_label = Label(root, text="Score: 0", bg="white", fg="red", font="Arial 14 bold")
+    canvas.create_window(100, 50, window=score_label)
 
     def update_score():
         nonlocal score

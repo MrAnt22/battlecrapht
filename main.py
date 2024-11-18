@@ -7,8 +7,8 @@ root = Tk()
 root.title("Ратмира ігрове вікно")
 root.geometry("1000x800")
 root.configure(bg="#D5BA33")
-root.maxsize(1000, 800)
-
+root.attributes('-fullscreen', True)
+root.bind("<Escape>", lambda e: root.attributes('-fullscreen', False))
 
 initialize_sounds()
 
