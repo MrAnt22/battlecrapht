@@ -28,7 +28,7 @@ def create_menu(root):
     def quit_game():
         root.quit()
 
-    canvas.create_text(400, 50, text="Warcraft IV", font=("Arial", 24), fill="Dark green")
+    canvas.create_text(400, 50, text="Warcraft IV", font=("Arial", 64), fill="Dark green")
     start_button = Button(root, text="Start Game", command=start_game, font=("Arial", 18), bg="green", fg="white")
     quit_button = Button(root, text="Quit", command=quit_game, font=("Arial", 18), bg="red", fg="white")
 
