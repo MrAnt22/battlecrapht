@@ -3,16 +3,28 @@ from PIL import Image, ImageTk
 from characters.arthas import Arthas
 from characters.snake import Snake
 from utils.sounds import play_music, play_random_sound
+from utils.loggers import FileLogger, ConsoleLogger, MultiLogger
 import random
 
 def start_level1(root):
+
+
+    #
+    file_logger = FileLogger("game_logs.txt")
+    console_logger = ConsoleLogger()
+    logger = MultiLogger(file_logger, console_logger)
+    logger.log("info", "Level 1 initialized.")
+    #
+
+
     play_music("assets/sounds/ithas.mp3")
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
     w = screen_width
     h = screen_height
-    
+    game_time = 60
+    remaining_time = game_time
     game_frame = Frame(root, bg="black")
     game_frame.pack(fill="both", expand=True)
 
@@ -20,10 +32,12 @@ def start_level1(root):
     bg1 = PhotoImage(file="assets/images/lordaeron.png")
     arthas_image = PhotoImage(file="assets/images/arthas.png")
     snake_image = PhotoImage(file="assets/images/snake.png")
+    metal_image = PhotoImage(file="assets/images/metal.png")
 
     game_frame.bg_image = bg1
     game_frame.arthas_image = arthas_image
     game_frame.snake_image = snake_image
+    game_frame.metal_image = metal_image
 
     original_image = Image.open("assets/images/lordaeron.png")
     stretched_image = original_image.resize((screen_width, screen_height))
@@ -41,6 +55,32 @@ def start_level1(root):
     score_label = Label(root, text="Score: 0", bg="white", fg="red", font="Arial 14 bold")
     canvas.create_window(100, 50, window=score_label)
 
+    timer_label = Label(
+        root, text=f"Time Remaining: {remaining_time} seconds", bg="white", fg="blue", font="Arial 14 bold"
+    )
+    canvas.create_window(w - 150, 50, window=timer_label)
+    def update_timer():
+        nonlocal remaining_time
+        if remaining_time > 0:
+            remaining_time -= 1
+            timer_label.config(text=f"Time Remaining: {remaining_time} seconds")
+            root.after(1000, update_timer)  # Call this function again after 1 second
+        else:
+            game_over_timeout()
+    def game_over_timeout():
+        canvas.create_text(w // 2,h // 2,text="Time's up! Game Over!",font="Arial 24 bold",fill="red")
+        #
+        logger.log("info", "Game Over due to timeout.")
+        #
+        root.unbind("<Left>")
+        root.unbind("<Right>")
+        root.unbind("<Up>")
+        root.unbind("<Down>")
+        root.unbind("<space>")
+        root.after(3000, root.quit)
+
+    update_timer()
+    
     def update_score():
         nonlocal score
         score += 1
@@ -54,6 +94,11 @@ def start_level1(root):
 
     def on_collision():
         if arthas.collides_with(snake):
+
+            #
+            logger.log("debug", f"Collision detected at Arthas ({arthas.x}, {arthas.y}).")
+            #
+
             update_score()
 
     is_stunned = False
@@ -66,24 +111,36 @@ def start_level1(root):
 
             random_x = random.randint(100, w - 100)
             random_y = random.randint(100, h - 100)
-            attack_object_id = canvas.create_rectangle(random_x - 20, random_y - 20, random_x + 20, random_y + 20, fill="red", outline="yellow")
-            stun_message_id = canvas.create_text(w // 2,100,text="Click the red circle to keep fighting!",font="Arial 18 bold",fill="white")
+
+            attack_object_id = canvas.create_image(random_x, random_y, image=metal_image)
+
+            stun_message_id = canvas.create_text(
+                w // 2, 100, text="Click on metal gear from metal gear solid V to destroy him!", font="Arial 18 bold", fill="white"
+            )
+
             def on_click(event):
                 nonlocal is_stunned, stun_message_id, attack_object_id
-                coords = canvas.coords(attack_object_id)
-                if coords[0] <= event.x <= coords[2] and coords[1] <= event.y <= coords[3]:
-                    canvas.delete(attack_object_id)
-                    canvas.delete(stun_message_id)
-                    stun_message_id = None
-                    is_stunned = False
+                if attack_object_id is not None:
+                    coords = canvas.coords(attack_object_id)
+                    if coords and len(coords) >= 2:
+                        image_width = 100
+                        if coords[0] - image_width / 2 <= event.x <= coords[0] + image_width / 2 and \
+                        coords[1] - image_width / 2 <= event.y <= coords[1] + image_width / 2:
+                            canvas.delete(attack_object_id)
+                            canvas.delete(stun_message_id)
+                            stun_message_id = None
+                            attack_object_id = None
+                            is_stunned = False
+                    
             canvas.bind("<Button-1>", on_click)
-            root.after(5000, lambda: game_over() if is_stunned else None)
-            
-        elif score % 5 == 0 and score != 0 and score and score != 15 and score != 20 :
+            root.after(4000, lambda: game_over() if is_stunned else None)
+
+        elif score % 5 == 0 and score != 0 and score != 15 and score != 20 :
             if not is_stunned:
                 is_stunned = True
                 stun_message_id = canvas.create_text(w // 2, h // 2, text="Arthas is stunned by coward Snake! Press the left mouse button to keep fighting!", font="Arial 14", fill="red")
                 root.bind("<Button-1>", release_stun)
+
     def release_stun(event):
         nonlocal is_stunned, stun_message_id
         is_stunned = False
@@ -96,6 +153,11 @@ def start_level1(root):
     def game_over():
             nonlocal is_stunned
             if is_stunned:
+
+                #
+                logger.log("info", "Game Over triggered.")
+                #
+
                 canvas.create_text(
                     w // 2,
                     h // 2,
@@ -106,8 +168,12 @@ def start_level1(root):
                 root.unbind("<Button-1>")
                 root.after(3000, root.quit)
             
-            last_direction = {"x": 0, "y": 0}
     def win():
+
+        #
+        logger.log("info", "Game over triggered")
+        #
+
         canvas.create_text(
             w // 2,
             h // 2,
@@ -171,7 +237,11 @@ def start_level1(root):
                 can_dash = True
 
             root.after(1000, reset_dash)
-                    
+
+            #
+        else: logger.log("error", "Failed to dash")
+            #
+            
     root.bind("<Left>", lambda event: move_left())
     root.bind("<Right>",lambda event: move_right())
     root.bind("<Up>",lambda event: move_up())
