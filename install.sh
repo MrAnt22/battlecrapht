@@ -48,3 +48,11 @@ install_python() {
 }
 
 install_python
+
+echo "Installing other dependencies..."
+
+pip install pygame
+
+echo "Everything is now installed. Press anything to exit."
+
+read -n 1 -s
