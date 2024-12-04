@@ -35,6 +35,7 @@ msg "%username%" Downloading other taip-shi'
 echo Installing other dependencies...
 
 pip install pygame
+pip install Pillow
 
 echo Everything is now installed. Press anything to exit.
 
