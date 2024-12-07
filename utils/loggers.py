@@ -1,26 +1,29 @@
 import datetime
 
+def log_decorator(func):
+    def wrapper(self, level, message):
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        formatted_message = f"[{timestamp}] [{level.upper()}] {message}"
+        return func(self, level, formatted_message)
+    return wrapper
+
 class Logger:
     def log(self, level, message):
         raise NotImplementedError("Subclasses should implement this method.")
-
-    def format_message(self, level, message):
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return f"[{timestamp}] [{level.upper()}] {message}"
 
 class FileLogger(Logger):
     def __init__(self, filename):
         self.filename = filename
 
+    @log_decorator
     def log(self, level, message):
-        formatted_message = self.format_message(level, message)
         with open(self.filename, "a") as file:
-            file.write(formatted_message + "\n")
+            file.write(message + "\n")
 
 class ConsoleLogger(Logger):
+    @log_decorator
     def log(self, level, message):
-        formatted_message = self.format_message(level, message)
-        print(formatted_message)
+        print(message)
 
 class MultiLogger(Logger):
     def __init__(self, *loggers):

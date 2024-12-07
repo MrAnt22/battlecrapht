@@ -5,7 +5,7 @@ from utils.loggers import FileLogger, ConsoleLogger, MultiLogger
 
 
 root = Tk()
-root.title("Воевать-Мастерить 4")
+root.title("Warcraft IV")
 root.geometry("1000x800")
 root.configure(bg="#D5BA33")
 root.attributes('-fullscreen', True)
